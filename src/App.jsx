@@ -5,7 +5,7 @@ function App(){
 
   const [data , setData]  = useState([])
 
-  axios.get('http://localhost:3000/')
+  axios.get('https://my-backend-m09f.onrender.com/')
   .then(res => setData(res.data))
   .catch(err => console.log("Error accurred" , err))
   return(
