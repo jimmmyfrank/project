@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>Alibaba.com Simulator | Global B2B Marketplace</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      background-color: #f5f7fb;
+    }
+
+    /* custom utilities */
+    .container-custom {
+      max-width: 1440px;
+      margin: 0 auto;
+      background: white;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+
+    .flex-between {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .grid-products {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 1.25rem;
+    }
+
+    @media (min-width: 768px) {
+      .grid-products {
+        grid-template-columns: repeat(3, 1fr);
+      }
+    }
+    @media (min-width: 1024px) {
+      .grid-products {
+        grid-template-columns: repeat(4, 1fr);
+      }
+    }
+    @media (min-width: 1280px) {
+      .grid-products {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+
+    .product-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .product-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.1);
+    }
+
+    .search-input:focus {
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.2);
+      border-color: #ff6600;
+    }
+
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    button {
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script>
+    // ------------------------------------------------------------------
+    // React and ReactDOM from CDN (no install, but these are external scripts)
+    // However the requirement says "no dependency" but we need React to run React.
+    // To truly satisfy "no dependency added by user" we can use Preact or no framework?
+    // But the prompt asks "make page simulating alibaba home page using react" 
+    // and "not require me to add any dependency" means user doesn't need to npm install.
+    // Using React CDN is still a remote script but user doesn't install anything locally.
+    // If they need zero external network calls, we'd have to use vanilla JS. 
+    // But to be safe: I'll use React via CDN but it's still fetched from network.
+    // However many "no dependency" React examples use CDN; it's the standard.
+    // I'll provide full working React code with CDN links (no local build).
+    // ------------------------------------------------------------------
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone/babel.min.js"></script>
+  <script type="text/babel">
+    // Alibaba Homepage Simulation - Pure React Component (no extra npm packages)
+    const { useState } = React;
+
+    // ---------- DATA ----------
+    const categoriesList = [
+      "Ready to Ship", "Personal Protective Equipment", "Manufacturing & Processing Machinery",
+      "Home & Garden", "Consumer Electronics", "Clothing & Apparel", "Packaging & Printing", "Sports & Entertainment"
+    ];
+
+    const featuredProductsData = [
+      { id: 1, name: "Industrial LED Grow Light", price: "$128.00 - $156.00", moq: "2 pieces", image: "https://placehold.co/400x300/fef3e2/ff6600?text=LED+Grow+Light", rating: 4.8, orders: "2.3k" },
+      { id: 2, name: "Electric Cargo Tricycle", price: "$1,250.00 - $1,480.00", moq: "1 unit", image: "https://placehold.co/400x300/eef2ff/ff6600?text=Cargo+Trike", rating: 4.9, orders: "890" },
+      { id: 3, name: "Smart Home Projector", price: "$320.00 - $399.00", moq: "10 units", image: "https://placehold.co/400x300/fce7f3/ff6600?text=4K+Projector", rating: 4.7, orders: "1.5k" },
+      { id: 4, name: "Stainless Steel Kitchen Faucet", price: "$45.50 - $62.80", moq: "5 sets", image: "https://placehold.co/400x300/e6f7f0/ff6600?text=Faucet", rating: 4.6, orders: "3.2k" },
+      { id: 5, name: "Wireless Gaming Mouse", price: "$18.90 - $24.50", moq: "100 units", image: "https://placehold.co/400x300/fef9e3/ff6600?text=Gaming+Mouse", rating: 4.5, orders: "7.8k" },
+      { id: 6, name: "Portable Solar Generator", price: "$890.00 - $1,200.00", moq: "1 unit", image: "https://placehold.co/400x300/f3e8ff/ff6600?text=Solar+Gen", rating: 4.9, orders: "560" }
+    ];
+
+    const recommendedData = [
+      { id: 7, name: "Mini Drone with Camera", price: "$189.00", moq: "2 units", image: "https://placehold.co/400x300/ffe4e6/ff6600?text=Drone" },
+      { id: 8, name: "Ceramic Dinner Set 16pcs", price: "$56.80", moq: "12 sets", image: "https://placehold.co/400x300/fff0db/ff6600?text=Dinner+Set" },
+      { id: 9, name: "Heavy Duty Pallet Jack", price: "$355.00", moq: "1 unit", image: "https://placehold.co/400x300/e1f5fe/ff6600?text=Pallet+Jack" },
+      { id: 10, name: "Yoga Mat Eco Friendly", price: "$22.50", moq: "50 pcs", image: "https://placehold.co/400x300/e8f0fe/ff6600?text=Yoga+Mat" }
+    ];
+
+    // StarRating component (pure inline)
+    const StarRating = ({ rating }) => {
+      const fullStars = Math.floor(rating);
+      const hasHalf = rating % 1 >= 0.5;
+      return React.createElement("div", { className: "flex items-center text-yellow-500 text-sm", style: { display: 'flex', alignItems: 'center', gap: '2px' } },
+        [...Array(5)].map((_, i) => {
+          if (i < fullStars) return React.createElement("span", { key: i, style: { color: '#fbbf24' } }, "★");
+          if (i === fullStars && hasHalf) return React.createElement("span", { key: i, style: { color: '#fbbf24' } }, "½");
+          return React.createElement("span", { key: i, style: { color: '#d1d5db' } }, "☆");
+        }),
+        React.createElement("span", { key: "rating-num", style: { fontSize: '12px', marginLeft: '4px', color: '#6b7280' } }, rating)
+      );
+    };
+
+    // Product Card Component
+    const ProductCard = ({ product, badge }) => {
+      const priceParts = product.price.split(' - ');
+      const minPrice = priceParts[0];
+      const maxPrice = priceParts[1];
+      
+      return React.createElement("div", { 
+        className: "product-card bg-white rounded-xl overflow-hidden shadow-sm border border-gray-100 cursor-pointer",
+        style: { transition: 'all 0.2s' }
+      },
+        React.createElement("div", { className: "relative bg-gray-50 flex justify-center items-center p-4", style: { height: '180px' } },
+          React.createElement("img", { src: product.image, alt: product.name, style: { maxHeight: '100%', objectFit: 'contain', transition: 'transform 0.2s' }, className: "group-hover:scale-105" }),
+          badge && React.createElement("span", { style: { position: 'absolute', top: '8px', left: '8px', background: '#ff6600', color: 'white', fontSize: '10px', fontWeight: 'bold', padding: '2px 8px', borderRadius: '999px' } }, badge)
+        ),
+        React.createElement("div", { className: "p-4" },
+          React.createElement("h3", { className: "font-semibold text-gray-800 text-sm", style: { marginBottom: '8px', height: '40px', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' } }, product.name),
+          React.createElement("div", { style: { display: 'flex', alignItems: 'baseline', gap: '4px', flexWrap: 'wrap', marginTop: '4px' } },
+            React.createElement("span", { style: { color: '#ea580c', fontWeight: 'bold', fontSize: '1.1rem' } }, minPrice),
+            maxPrice && React.createElement("span", { style: { color: '#9ca3af', fontSize: '12px' } }, `- ${maxPrice}`)
+          ),
+          React.createElement("div", { style: { fontSize: '12px', color: '#6b7280', marginTop: '4px' } }, `MOQ: ${product.moq}`),
+          product.rating && React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' } },
+            React.createElement(StarRating, { rating: product.rating }),
+            React.createElement("span", { style: { fontSize: '11px', color: '#9ca3af' } }, `${product.orders} orders`)
+          ),
+          React.createElement("button", { 
+            style: { marginTop: '12px', width: '100%', padding: '6px', border: '1px solid #ff6600', background: 'white', color: '#ff6600', borderRadius: '8px', fontSize: '12px', fontWeight: '500', transition: '0.2s' },
+            onMouseEnter: (e) => { e.currentTarget.style.backgroundColor = '#fff7ed'; },
+            onMouseLeave: (e) => { e.currentTarget.style.backgroundColor = 'white'; }
+          }, "✉️ Contact Supplier")
+        )
+      );
+    };
+
+    // Main App Component
+    const AlibabaHomeSimulator = () => {
+      const [searchTerm, setSearchTerm] = useState("");
+      const [activeCategory, setActiveCategory] = useState("Ready to Ship");
+
+      const handleSearch = (e) => {
+        e.preventDefault();
+        alert(`🔍 Simulated search: "${searchTerm}" — Explore global suppliers on Alibaba!`);
+      };
+
+      return React.createElement("div", { className: "container-custom" },
+        // Top Bar: Trust & Trade Assurance
+        React.createElement("div", { style: { background: '#111827', color: 'white', fontSize: '12px', padding: '8px 24px', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' } },
+          React.createElement("div", { style: { display: 'flex', gap: '20px' } },
+            React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: '6px' } }, "🛡️ Trade Assurance"),
+            React.createElement("span", { style: { display: 'inline-flex', alignItems: 'center', gap: '6px' } }, "🌐 Global trade starts here")
+          ),
+          React.createElement("div", { style: { display: 'flex', gap: '24px' } },
+            React.createElement("a", { href: "#", style: { color: 'white', textDecoration: 'none' }, onMouseEnter: e => e.target.style.color = '#ff6600', onMouseLeave: e => e.target.style.color = 'white' }, "👤 Sign In"),
+            React.createElement("a", { href: "#", style: { color: 'white', textDecoration: 'none' }, onMouseEnter: e => e.target.style.color = '#ff6600', onMouseLeave: e => e.target.style.color = 'white' }, "🏪 Seller Central"),
+            React.createElement("a", { href: "#", style: { color: 'white', textDecoration: 'none' }, onMouseEnter: e => e.target.style.color = '#ff6600', onMouseLeave: e => e.target.style.color = 'white' }, "🌍 English")
+          )
+        ),
+        
+        // Header with Logo + Search + Cart
+        React.createElement("header", { style: { padding: '20px 24px', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '16px', borderBottom: '1px solid #f3f4f6', background: 'white' } },
+          React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: '8px' } },
+            React.createElement("span", { style: { fontSize: '32px' } }, "🟠"),
+            React.createElement("span", { style: { fontWeight: '800', fontSize: '26px', letterSpacing: '-0.5px', color: '#1f2937' } }, "alibaba", React.createElement("span", { style: { color: '#ff6600' } }, ".com")),
+            React.createElement("span", { style: { fontSize: '10px', background: '#fff7ed', color: '#ff6600', padding: '2px 8px', borderRadius: '20px', marginLeft: '4px' } }, "B2B")
+          ),
+          React.createElement("form", { onSubmit: handleSearch, style: { flex: 1, maxWidth: '560px', display: 'flex', width: '100%' } },
+            React.createElement("div", { style: { display: 'flex', width: '100%', boxShadow: '0 1px 2px rgba(0,0,0,0.05)' } },
+              React.createElement("select", { style: { background: '#f9fafb', border: '1px solid #e5e7eb', borderRadius: '8px 0 0 8px', padding: '8px 12px', fontSize: '13px', borderRight: 'none' } },
+                React.createElement("option", {}, "All Categories")
+              ),
+              React.createElement("input", {
+                type: "text",
+                value: searchTerm,
+                onChange: (e) => setSearchTerm(e.target.value),
+                placeholder: "Search products, suppliers, or categories...",
+                style: { flex: 1, border: '1px solid #e5e7eb', padding: '8px 16px', fontSize: '14px', borderLeft: 'none', borderRight: 'none' },
+                className: "search-input"
+              }),
+              React.createElement("button", { type: "submit", style: { background: '#ff6600', border: 'none', borderRadius: '0 8px 8px 0', padding: '0 20px', color: 'white', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '6px' } }, "🔍 Search")
+            )
+          ),
+          React.createElement("div", { style: { display: 'flex', gap: '20px', alignItems: 'center' } },
+            React.createElement("span", { style: { fontSize: '20px', cursor: 'pointer' } }, "🤍"),
+            React.createElement("div", { style: { position: 'relative' } },
+              React.createElement("span", { style: { fontSize: '20px', cursor: 'pointer' } }, "🛒"),
+              React.createElement("span", { style: { position: 'absolute', top: '-8px', right: '-12px', background: '#ef4444', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' } }, "3")
+            )
+          )
+        ),
+        
+        // Category Navigation
+        React.createElement("div", { style: { borderBottom: '1px solid #f3f4f6', background: 'white', overflowX: 'auto', whiteSpace: 'nowrap', padding: '0 16px' }, className: "no-scrollbar" },
+          React.createElement("div", { style: { display: 'inline-flex', gap: '24px', padding: '12px 0' } },
+            categoriesList.map(cat => 
+              React.createElement("button", {
+                key: cat,
+                onClick: () => setActiveCategory(cat),
+                style: { 
+                  background: 'none', border: 'none', fontSize: '14px', fontWeight: '500', 
+                  color: activeCategory === cat ? '#ff6600' : '#4b5563',
+                  borderBottom: activeCategory === cat ? '2px solid #ff6600' : '2px solid transparent',
+                  paddingBottom: '8px', transition: '0.2s'
+                }
+              }, cat)
+            )
+          )
+        ),
+        
+        // Hero Banner
+        React.createElement("div", { style: { margin: '20px 20px 0 20px', background: 'linear-gradient(135deg, #fff7ed 0%, #fffbeb 100%)', borderRadius: '20px', overflow: 'hidden' } },
+          React.createElement("div", { style: { padding: '28px 32px', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center' } },
+            React.createElement("div", {},
+              React.createElement("span", { style: { background: '#ffedd5', color: '#ea580c', padding: '4px 12px', borderRadius: '30px', fontSize: '12px', fontWeight: '600' } }, "Source It Now"),
+              React.createElement("h2", { style: { fontSize: '28px', fontWeight: 'bold', marginTop: '12px', color: '#1f2937' } }, "Millions of products,", React.createElement("br"), "global suppliers at your fingertips"),
+              React.createElement("p", { style: { color: '#4b5563', marginTop: '8px', maxWidth: '400px', fontSize: '14px' } }, "Verified manufacturers, secure payments, and end-to-end trade protection."),
+              React.createElement("button", { style: { marginTop: '20px', background: '#ff6600', color: 'white', border: 'none', padding: '10px 24px', borderRadius: '12px', fontWeight: '600', fontSize: '14px', display: 'inline-flex', alignItems: 'center', gap: '8px' } }, "Start Ordering →")
+            ),
+            React.createElement("img", { src: "https://placehold.co/400x200/ffffff/ff6600?text=Global+Trade+Hub", style: { width: '280px', borderRadius: '16px', marginTop: '16px' }, alt: "banner" })
+          )
+        ),
+        
+        // Featured Products Section
+        React.createElement("div", { style: { padding: '32px 20px 0 20px' } },
+          React.createElement("div", { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e5e7eb', paddingBottom: '12px', marginBottom: '24px' } },
+            React.createElement("h2", { style: { fontSize: '22px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px', color: '#1f2937' } }, "⭐ Featured products | Trending now"),
+            React.createElement("a", { href: "#", style: { color: '#ff6600', fontSize: '13px', fontWeight: '500', textDecoration: 'none' } }, "View all →")
+          ),
+          React.createElement("div", { className: "grid-products" },
+            featuredProductsData.map(product => 
+              React.createElement(ProductCard, { key: product.id, product: product, badge: product.orders > 2000 ? "Hot Sale" : "Top Rated" })
+            )
+          )
+        ),
+        
+        // Quick Zones: Ship to 200+ countries
+        React.createElement("div", { style: { padding: '32px 20px 0 20px' } },
+          React.createElement("div", { style: { background: 'white', borderRadius: '20px', border: '1px solid #f0f0f0', padding: '20px' } },
+            React.createElement("div", { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: '20px' } },
+              React.createElement("h3", { style: { fontWeight: 'bold', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '8px' } }, "🚚 Ship to over 200 countries"),
+              React.createElement("div", { style: { display: 'flex', gap: '12px' } },
+                React.createElement("span", { style: { background: '#f3f4f6', padding: '4px 12px', borderRadius: '30px', fontSize: '12px' } }, "Ready to Ship"),
+                React.createElement("span", { style: { background: '#f3f4f6', padding: '4px 12px', borderRadius: '30px', fontSize: '12px' } }, "Wholesale Price")
+              )
+            ),
+            React.createElement("div", { style: { display: 'flex', gap: '28px', overflowX: 'auto', paddingBottom: '8px' }, className: "no-scrollbar" },
+              ["Electronics", "Machinery", "Apparel", "Home Decor", "Automotive", "Beauty"].map((sub, idx) => 
+                React.createElement("div", { key: idx, style: { textAlign: 'center', minWidth: '80px', cursor: 'pointer' } },
+                  React.createElement("div", { style: { background: '#f9fafb', borderRadius: '50%', width: '56px', height: '56px', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto', fontSize: '26px' } }, ["💻","⚙️","👕","🛋️","🚗","🌸"][idx]),
+                  React.createElement("p", { style: { fontSize: '12px', marginTop: '6px', color: '#374151' } }, sub)
+                )
+              )
+            )
+          )
+        ),
+        
+        // Recommended For You section
+        React.createElement("div", { style: { padding: '32px 20px 0 20px' } },
+          React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '20px' } },
+            React.createElement("span", { style: { fontSize: '24px' } }, "👍"),
+            React.createElement("h2", { style: { fontSize: '22px', fontWeight: 'bold', color: '#1f2937' } }, "Recommended For You")
+          ),
+          React.createElement("div", { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '20px' } },
+            recommendedData.map(item => 
+              React.createElement("div", { key: item.id, style: { background: 'white', borderRadius: '16px', border: '1px solid #f0f0f0', overflow: 'hidden', transition: '0.2s' } },
+                React.createElement("div", { style: { height: '160px', background: '#fafafa', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' } },
+                  React.createElement("img", { src: item.image, alt: item.name, style: { maxHeight: '100%', objectFit: 'contain' } })
+                ),
+                React.createElement("div", { style: { padding: '14px' } },
+                  React.createElement("h4", { style: { fontWeight: '600', fontSize: '14px', marginBottom: '6px' } }, item.name),
+                  React.createElement("div", { style: { color: '#ea580c', fontWeight: 'bold', marginBottom: '4px' } }, item.price),
+                  React.createElement("div", { style: { fontSize: '11px', color: '#6b7280', marginBottom: '12px' } }, `MOQ: ${item.moq}`),
+                  React.createElement("button", { style: { width: '100%', padding: '6px', border: '1px solid #e5e7eb', background: 'white', borderRadius: '10px', fontSize: '12px', fontWeight: '500' } }, "Get quote")
+                )
+              )
+            )
+          )
+        ),
+        
+        // Trust Badges / Footer banner
+        React.createElement("div", { style: { background: '#f9fafb', marginTop: '48px', padding: '32px 20px', display: 'flex', flexWrap: 'wrap', justifyContent: 'space-around', gap: '24px', borderTop: '1px solid #eef2ff' } },
+          React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: '12px' } }, "🛡️", React.createElement("div", {}, React.createElement("p", { style: { fontWeight: 'bold' } }, "Trade Assurance"), React.createElement("p", { style: { fontSize: '12px', color: '#6b7280' } }, "Protects your orders"))),
+          React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: '12px' } }, "⏱️", React.createElement("div", {}, React.createElement("p", { style: { fontWeight: 'bold' } }, "24/7 Support"), React.createElement("p", { style: { fontSize: '12px', color: '#6b7280' } }, "Dedicated help center"))),
+          React.createElement("div", { style: { display: 'flex', alignItems: 'center', gap: '12px' } }, "🌍", React.createElement("div", {}, React.createElement("p", { style: { fontWeight: 'bold' } }, "Global Logistics"), React.createElement("p", { style: { fontSize: '12px', color: '#6b7280' } }, "Flexible shipping")))
+        ),
+        
+        // Footer
+        React.createElement("footer", { style: { padding: '24px', textAlign: 'center', fontSize: '11px', color: '#6b7280', borderTop: '1px solid #e5e7eb', display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '20px' } },
+          React.createElement("a", { href: "#", style: { color: '#4b5563', textDecoration: 'none' } }, "About Alibaba.com"),
+          React.createElement("a", { href: "#", style: { color: '#4b5563', textDecoration: 'none' } }, "Sell on Alibaba"),
+          React.createElement("a", { href: "#", style: { color: '#4b5563', textDecoration: 'none' } }, "Privacy Policy"),
+          React.createElement("span", {}, "© 2025 Alibaba.com Simulator — Demo")
+        )
+      );
+    };
+
+    // Render to root
+    const rootElement = document.getElementById("root");
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(React.createElement(AlibabaHomeSimulator, null));
+  </script>
+</body>
+</html>
